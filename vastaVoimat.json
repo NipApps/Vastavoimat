@@ -1,0 +1,28 @@
+{	"name": "Vastavoimat", "tunnus": "999999",
+	"children":
+	[	{	"name": "Extro-Intro", "tunnus": "991", 
+			"children": 
+			[	{	"name": "Extro2+", "tunnus": "-1-1"
+				},
+				{	"name": "Intro2+", "tunnus": "-1-2"
+				},
+				{	"name": "Intro1+", "tunnus": "-1-3"
+				},
+				{	"name": "Extro1+", "tunnus": "-1-4"
+				}
+			]
+		},
+		{	"name": "Global-Local", "tunnus": "992", 
+			"children": 
+			[	{	"name": "Global2+", "tunnus": "-2-1"
+				},
+				{	"name": "Local2+", "tunnus": "-2-2"
+				},
+				{	"name": "Local1+", "tunnus": "-2-3"
+				},
+				{	"name": "Global1+", "tunnus": "-2-4"
+				}
+			]
+		}
+	]
+}		

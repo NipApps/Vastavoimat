@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+	<link type="text/css" rel="stylesheet" href="style.css"/>
+	<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" 
+		integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" 
+		crossorigin="anonymous"
+		></script>
+	<link 
+		href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" 
+		rel="stylesheet" 
+		integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" 
+		crossorigin="anonymous"
+		>
+	<script type="text/javascript" src="https://d3js.org/d3.v3.min.js">
+	</script>
+	<script src="https://cdn.ckeditor.com/4.13.1/full/ckeditor.js">
+	</script>
+	<style type="text/css">
+		.node circle 
+		{	cursor: pointer;
+			fill: silver;
+			stroke: steelblue;
+			stroke-width: 2px;
+		}
+		.node text 
+		{	font-size: 17px;
+		}
+		path.link 
+		{	fill: none;
+			stroke: green;
+			stroke-width: 3px;
+		}		
+		.node.selected circle 
+		{	fill: green;
+		}
+		.piiloon
+		{	display: none;
+		}
+		.nayta
+		{	display:"";
+		}
+		#vastausAlue
+		{	padding: 50px; 
+			margin: 50px;
+		}
+		#vastaus
+		{	width: 1000px;
+			height: 1000px;
+			height: 600px;
+			padding: 60px;			
+		}
+		.btnVastaKohdat
+		{	margin: 3px;
+		}
+	</style>
+</head>
+<body>
+	<br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<button id="login" type="button" class="btn btn-danger" onClick="logIn()">Login</button>
+	&nbsp;&nbsp;&nbsp;&nbsp;
+	<select id="vastaVoimat" onChange="asetaVastaKohdat(value)"></select>
+	<button id="btnVastaukset" type="button" class="btn btn-info" onClick="haeTietoIskutValitulleNayttamolle()">
+		Listalle
+	</button>
+	<button id="plusMerkki" type="button" class="btn btn-info piiloon" onClick="naytaPlusHaarat()">+</button>
+	<button id="minusMerkki" type="button" class="btn btn-danger nayta" onClick="naytaMinusHaarat()">-</button>
+	<span id="spanButtonAlue1" class="piiloon">
+		&nbsp;&nbsp;&nbsp;&nbsp;
+		<button type="button" class="btn btn-info" onClick="lisaaNode()">Lisäys</button>
+		<button type="button" class="btn btn-danger" onClick="muutaNode()">Muutos</button>		
+		<button type="button" class="btn btn-danger" onClick="poistaNode()">Poisto</button>
+		<br/>
+		<div class="btnVastaKohdat">
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<input id="vastaKohta1" type="text" value="" />
+			<input id="vastaKohta2" type="text" value="" />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<button type="button" class="btn btn-info" onClick="lisaaVastaKohtat()">Lisäys</button>
+			<button type="button" class="btn btn-danger" onClick="muutaVastaKohtat()">Muutos</button>		
+			<button type="button" class="btn btn-danger" onClick="poistaVastaKohtat()">Poisto</button>
+		</div>	
+	</span>
+	<div class="nayta" id="body"></div>
+	<div class="piiloon" id="vastauksetAlue">
+		<table>
+		<tr>
+			<td id="vastaus" valign="top">fdsfsdfsdf</td>
+			<td valign="top" id="vastaukset">
+				<ul class="list-group"></ul>
+			</td>
+		</tr>
+		</table>
+		</div>
+	<hr/>
+	<!-------------------- MODALS ---------------------------------------->
+	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" 
+		aria-labelledby="exampleModalLongTitle" 
+		aria-hidden="true">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h4 class="modal-title" id="modalTitle">
+					</h4>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="false">&times;</span>
+					</button>
+				</div>
+				<div id="modal" class="modal-body">					
+				</div>
+				<div class="modal-footer">
+					Tämä ohjelmistoa  jaetaan <a href="https://github.com/NipApps/vastavoimat"><u>GitHub:ssa</u></a>.
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">
+						Sulje
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="loginModal" 
+		tabindex="-1" 
+		role="dialog" 
+		aria-labelledby="exampleModalCenterTitle" 
+		aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLongTitle">Login</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<input type="email" id="loginMail" placeholder="mail@esimerkki.fi"/><br/>
+					<input type="password" id="loginPassword" placeholder="Salasana">
+				</div>
+				<div class="modal-footer">					
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">
+						Sulje
+					</button>
+					<button type="button" class="btn btn-danger" onClick="kirjaudu()">
+						Kirjaudu
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<script src="https://www.gstatic.com/firebasejs/7.8.0/firebase.js">
+	</script>
+	<script src="https://www.gstatic.com/firebasejs/7.8.0/firebase-auth.js">
+	</script>
+  	<script src="https://www.gstatic.com/firebasejs/7.8.0/firebase-firestore.js">
+	</script>
+	
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" 
+		integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" 
+		crossorigin="anonymous"
+	></script>
+	<script type="module">
+		import { etusivu, otsikko } from "./etusivu.js"
+		document.getElementById("modal").innerHTML = etusivu
+		document.getElementById("modalTitle").innerHTML = otsikko
+	</script>
+	<script type="text/javascript">
+		var gloAlkuAsetus = "Extro-Intro"
+		var gloCollection = gloAlkuAsetus
+		var gloDoc = gloAlkuAsetus
+		var gloVastaKohtienLkm = 1
+
+		var gloPlusMap = ""
+		var gloMinusMap = ""
+		var gloValittuMap = ""
+		var gloJsonClone = ""
+
+		var gloTunnus = "1"		
+		var gloToiminto = "Lisays"
+		var gloNewName = ""
+		var gloTietoIsku = ""
+
+		var gloLogin = false
+		var gloOksaLoytyi = false
+		var gloPositive = true
+		var gloKarttaValittu = true
+		var gloClickIndex = 0
+
+		const gloOk = "Tuloksellista toimintaa"
+		const gloNotOk = "Seurauksia toimimattomuudesta"
+		var gloYhteisToimintaViesti = gloOk
+		var gloStroke = "green"
+
+		// ----------------- FIREBASE CONFIG -------------------------
+		const config =
+		{  
+		}
+		const plusDB = firebase.initializeApp(config) //= DEFAULT DB
+		const minusDB = firebase.initializeApp
+		(	{	
+			},
+			"minusDB"
+		)
+		vastaukset = firebase.initializeApp
+		(	{	
+			},
+			'vastaukset'			
+		)
+		const vastauksetDB = firebase.firestore(vastaukset)
+	</script>
+	<script type="text/javascript" src="d3.js">
+	</script>
+	<script type="text/javascript">
+		window.onresize = () =>
+		{	let W = window.innerWidth/100*95
+			let H = window.innerHeight/100*95
+			reSizeKartta(W, H)
+		}
+		//-------------- LOG-IN-OUT ------------------------
+		const logIn = () =>
+		{	if(!gloLogin)
+			{	$('#loginModal').modal('show')
+			}else
+			{	document.getElementById("login").innerHTML = "Login"
+				piilota("#spanButtonAlue1")
+				gloLogin = false
+				gloKarttaValittu = !gloKarttaValittu
+				document.getElementById("vastaus").innerHTML = "Esitystila"
+				haeTietoIskutValitulleNayttamolle()
+			}
+		}
+		const kirjaudu = () =>
+		{	var email = document.getElementById("loginMail").value
+			var password = document.getElementById("loginPassword").value
+			firebase.auth().signInWithEmailAndPassword(email, password)
+			.then
+			(	() =>
+				{	document.getElementById("login").innerHTML = "Logout"
+					nayta("#spanButtonAlue1")
+					gloLogin = true
+					gloKarttaValittu = !gloKarttaValittu
+					haeTietoIskutValitulleNayttamolle()
+				}
+			).catch
+			(	(error) =>
+				{	console.error(error.code, error.message)
+				}
+			)			
+			$('#loginModal').modal('hide')	
+		}
+		//-----------------------------------------------------------------
+		//            HAETAAN TIETOISKUT
+		//-----------------------------------------------------------------	
+		const haeTietoIskutValitulleNayttamolle = async () => 
+		{	if (!gloKarttaValittu)
+			{	document.getElementById("btnVastaukset").innerHTML = "Vastaukset"
+				gloKarttaValittu = !gloKarttaValittu
+				piilota("#vastauksetAlue")
+				nayta("#body")
+				asetaValittuMap()
+			}else
+			{	document.getElementById("btnVastaukset").innerHTML = "Kartalle"
+				gloKarttaValittu = !gloKarttaValittu			
+				editButtons = ""
+				piilota("#body")
+				nayta("#vastauksetAlue")
+				let vastaukset = ""
+				+ "<button class='btn btn-info' onClick=lisaaTietoIsku()>+</button>"
+				+ "&nbsp;&nbsp;"
+				+ "<font size='6' color='brown'>"+gloCollection+"</font>"
+				await vastauksetDB.collection(gloCollection).get()
+				.then
+				(   (viesti) =>
+					{	viesti.docs.map
+						(	(docu) =>
+							{	if (gloLogin)
+								{	editButtons = ""
+									+ "<button class='btn btn-danger' onClick=poistaTietoIsku('"+docu.id+"')>-</button>"
+									+ "&nbsp;"
+									+ "<button class='btn btn-danger' onClick=muutaTietoIskunNimi('"+docu.id+"')>E</button>"
+								}
+								if (docu.data().isPositive === gloPositive)
+								{	vastaukset = vastaukset 
+									+ "<li class='list-group-item list-group-item-action'"
+									+ " onClick=haeTietoIskuEditoriin('"+docu.id+"')>"							  
+									+ editButtons
+									+ "&nbsp;&nbsp;"
+									+ "<b>"+docu.id+"</b>"
+									+ "</li>"
+								}
+							}
+						)
+					}
+				)
+				document.getElementById("vastaukset").innerHTML = vastaukset
+			}
+		}
+		const haeTietoIskuModaliin =	(docNimi) =>
+		{	vastauksetDB.collection(gloCollection).doc(docNimi).get().then
+			(   (viesti) =>
+				{	if (viesti.data() != undefined)
+					{	gloTietoIsku = viesti.data().viesti
+						if (!gloLogin)
+						{	document.getElementById("modalTitle").innerHTML = gloDoc
+							document.getElementById("modal").innerHTML = gloTietoIsku
+							$('#myModal').modal('show')
+						}
+					}else
+					{	console.error("Vastausta ei ole ",gloCollection,docNimi)						
+					}
+				}
+			).catch
+			(	(error) =>
+				{	gloTietoIsku = ""
+					console.error(error)
+				}
+			)
+		}
+		const haeTietoIskuEditoriin = (docNimi) =>
+		{	vastauksetDB.collection(gloCollection).doc(docNimi).get()
+			.then
+			(   (vastaus) =>
+				{	if (vastaus.exists)
+					{	if(gloLogin)
+						{	document.getElementById("vastaus").innerHTML = ""
+							+ "<span id='spanEditor'>"
+								+	"<button class='btn btn-info' onClick=talletaTietoIsku('"+docNimi+"')>Talleta</button>"
+								+	"<div id='ckEditorAlue'>"
+									+	"<textarea name='ckEditor' id='ckEditor'>"
+										+	vastaus.data().viesti
+									+	"</textarea>"
+								+	"</div>"
+							+	"</span>"
+							CKEDITOR.config.width = 1000
+							CKEDITOR.config.height = 500
+							var editor = CKEDITOR.replace("ckEditor")
+							editor.on
+							(	'change', 
+								(evt) =>
+								{	gloTietoIsku = evt.editor.getData()
+								}
+							)
+						}else
+						{	document.getElementById("vastaus").innerHTML = vastaus.data().viesti							
+						}
+					}
+				}
+			)
+		}
+		// --------------- TIETOISKUT -------------------------
+		const lisaaTietoIsku = () =>
+		{	let uusiDoc = prompt("Anna uuden tietoiskun nimi.")
+			if (uusiDoc)
+			{	uusiDoc = uusiDoc.replace(/ /g,"_")
+				gloTietoIsku = "Uusi vastaus"
+				talletaTietoIsku(uusiDoc)
+				gloKarttaValittu = true
+				haeTietoIskutValitulleNayttamolle()
+				haeTietoIskuEditoriin(uusiDoc)
+			}
+		}
+		const talletaTietoIsku = async (docNimi) =>
+		{	gloDoc = docNimi
+			await vastauksetDB.collection(gloCollection).doc(gloDoc).set
+			({	isPositive: gloPositive,
+				viesti: gloTietoIsku
+			}).then
+			(   () => console.log(gloDoc+" tiedot talletettu")
+			).catch
+			(   (err) => console.error(gloCollection, gloDoc," virhe talletaTietoIsku "+err)
+			) 
+		}
+		const poistaTietoIsku = async (docNimi) =>
+		{	await vastauksetDB.collection(gloCollection).doc(docNimi).delete()
+			.then
+			(	() =>
+				{	console.log(gloCollection, docNimi, " poisto tehty.")
+					gloKarttaValittu = true
+					haeTietoIskutValitulleNayttamolle()
+				}
+			).catch
+			(	(error) =>
+				{	console.error(gloCollection, docNimi, " poisto ei onnistunut? ", error)
+				}
+			)
+		}
+		const muutaTietoIskunNimi = async (docNimi) =>
+		{	let uusiDoc = prompt("Anna uusi nimi:")
+			uusiDoc = uusiDoc.replace(/ /g,"_")
+			if (!uusiDoc)
+			{	return
+			} 
+			await vastauksetDB.collection(gloCollection).doc(docNimi).get()
+			.then
+			(	(viesti) =>
+				{	gloTietoIsku = viesti.data().viesti					
+					vastauksetDB.collection(gloCollection).doc(docNimi).delete()
+					.then
+					(	() => console.log(gloCollection, docNimi, " poisto tehty.")
+					).catch
+					(	(error) => console.error(gloCollection, docNimi, " poisto ei onnistunut? ", error)
+					)
+					talletaTietoIsku(uusiDoc)
+					gloKarttaValittu = true
+					haeTietoIskutValitulleNayttamolle()
+				}
+			)			
+		}
+		/* ----------- ckEditorille --------
+		const editSisalto = () =>
+		{	CKEDITOR.instances.ckEditor.setData(gloTietoIsku)
+		}*/
+
+		// ------------ NAYTA HAARAT (+/-) ---------------------------
+		const naytaPlusHaarat = () =>
+		{	piilota("#plusMerkki")
+			nayta("#minusMerkki")
+			gloStroke = "green"
+			gloPositive = true
+			gloYhteisToimintaViesti = gloOk
+			if (gloKarttaValittu)
+			{	asetaValittuMap()
+			}else
+			{	gloKarttaValittu = !gloKarttaValittu
+				haeTietoIskutValitulleNayttamolle()
+			}
+		}
+		const naytaMinusHaarat = () =>
+		{	piilota("#minusMerkki")
+			nayta("#plusMerkki")
+			gloStroke = "red"
+			gloPositive = false
+			gloYhteisToimintaViesti = gloNotOk
+			if (gloKarttaValittu)
+			{	asetaValittuMap()
+			}else
+			{	gloKarttaValittu = !gloKarttaValittu
+				haeTietoIskutValitulleNayttamolle()
+			}
+		}
+		// ----------- PIILOTA/NAYTA elements  ------------------------
+		const piilota = (id) =>
+		{	const e1 = document.querySelector(id)
+			e1.classList.remove("nayta")
+			e1.classList.add("piiloon")
+		}
+		const nayta = (id) =>
+		{	const e1 = document.querySelector(id)
+			e1.classList.remove("piiloon")
+			e1.classList.add("nayta")
+		}
+		// ------------- VASTAKOHDAT -------------------------
+		const teeVastaKohtienMuutokset = (DB, kartta, muutos) =>
+		{	var jsonNew = kartta.map
+			(	(vastaKohta) =>
+				{	if (vastaKohta.name === gloCollection)
+					{	vastaKohta.name = muutos
+						const osat = muutos.split("-")
+						vastaKohta.children.map
+						(	(alaKohta, ind) =>
+							{	let kytkin = "-"
+								if (gloPositive)
+								{	kytkin = "+"
+								}
+								switch(ind)
+								{	case 0:
+										alaKohta.name = osat[0]+"2"+kytkin
+										break
+									case 1:
+										alaKohta.name = osat[1]+"2"+kytkin
+										break
+									case 2:
+										alaKohta.name = osat[1]+"1"+kytkin
+										break
+									case 3:
+										alaKohta.name = osat[0]+"1"+kytkin
+										break
+								}
+							}
+						)
+					}
+					return vastaKohta
+				}
+			)			
+			talletaFirebase(DB, jsonNew)
+		}
+		const muutaVastaKohtat = () =>
+		{	if (confirm("Tehdäänkö muutos?"))
+			{	let osa1 = document.getElementById("vastaKohta1").value
+				let osa2 = document.getElementById("vastaKohta2").value
+				let muutos = osa1+"-"+osa2
+				teeVastaKohtienMuutokset(plusDB, gloPlusMap, muutos)
+				teeVastaKohtienMuutokset(minusDB, gloMinusMap, muutos)
+				gloCollection = muutos
+				asetaValittuMap()
+			}
+		}
+		const lisaaVastaKohtat = () =>
+		{	let osa1 = document.getElementById("vastaKohta1").value
+			let osa2 = document.getElementById("vastaKohta2").value
+			let lisays = osa1+"-"+osa2			
+			if (confirm("Lisätäänkö "+lisays+"?"))
+			{	gloTietoIsku = "Uusi tieto"
+				gloCollection = lisays
+				talletaTietoIsku(lisays)
+				talletaVastaKohdanHaarat("+", osa1, osa2)
+				talletaVastaKohdanHaarat("-", osa1, osa2)
+				asetaValittuMap()
+			}
+		}
+		const talletaVastaKohdanHaarat = (merkki, osa1, osa2) =>
+		{	let pvTunnus = new Date().getTime()
+			const vastaKohdat =
+			({	"name": osa1+"-"+osa2,
+				"tunnus": pvTunnus,
+				"children":
+				[	{	"name": osa1+"2"+merkki, "tunnus": "-"+pvTunnus+"-1" },
+					{	"name": osa2+"2"+merkki, "tunnus": "-"+pvTunnus+"-2" },
+					{	"name": osa2+"1"+merkki, "tunnus": "-"+pvTunnus+"-3" },
+					{	"name": osa1+"1"+merkki, "tunnus": "-"+pvTunnus+"-4" }
+				]
+			})
+			if (merkki === "+")
+			{	gloPlusMap.push(vastaKohdat)
+				talletaFirebase(plusDB, gloPlusMap)
+				for (let i=0; i<4; i++)
+				{	talletaTietoIsku(vastaKohdat.children[i].name)
+				}
+			}else
+			{	gloMinusMap.push(vastaKohdat)
+				talletaFirebase(minusDB, gloMinusMap)
+				for (let i=0; i<4; i++)
+				{	talletaTietoIsku(vastaKohdat.children[i].name)
+				}
+			}
+		}
+		const poistaVastaKohtat = () =>
+		{	if (gloVastaKohtienLkm === 1)
+			{	alert("Viimeistä Vastakohtaa ei voi poistaa!")
+				return
+			}
+			if (confirm("Poistetaanko "+gloCollection+" ja sen alaosat?"))
+			{	gloPlusMap = gloPlusMap.filter
+				(	(vastaKohta) => vastaKohta.name != gloCollection
+				)
+				talletaFirebase(plusDB, gloPlusMap)				
+				gloMinusMap = gloMinusMap.filter
+				(	(vastaKohta) => vastaKohta.name != gloCollection
+				)
+				talletaFirebase(minusDB, gloMinusMap)
+				loadPlusMap()
+				loadMinusMap()
+			}
+		}
+		const asetaVastaKohdat = (vastaKohdat) =>
+		{	if (vastaKohdat === "-1")
+			{	return
+			}
+			gloCollection = vastaKohdat
+			let vastaOsat = vastaKohdat.split("-")
+			document.getElementById("vastaKohta1").value = vastaOsat[0]
+			document.getElementById("vastaKohta2").value = vastaOsat[1]
+			if (gloKarttaValittu)
+			{	loadJsonToD3()
+			}else
+			{	gloTietoIsku = ""
+				gloKarttaValittu = !gloKarttaValittu
+				haeTietoIskutValitulleNayttamolle()
+			}
+		}
+		//---------------------------- päivityksiä json-puussa -----------------------
+		var parentObj = ""
+		const kiipeaPuuhun = (obj) =>
+		{   if (gloOksaLoytyi)
+			{   return 
+			}
+			for (var o in obj) 
+			{   if (typeof obj[o] === "object") 
+				{	if ((obj[o].tunnus === gloTunnus) && (obj[o].name === gloDoc))
+					{	gloOksaLoytyi = true
+						switch(gloToiminto)
+						{	case "lisäys":									
+								var paivays = new Date()
+								if (obj[o].children != undefined)
+								{	obj[o].children.push
+									({	"name": gloNewName,
+										"tunnus": paivays.getTime()
+									})
+								}else
+								{	objAppend =
+									{	"children":
+										[	{	"name": gloNewName,
+												"tunnus": paivays.getTime()
+											}
+										]
+									}
+									// forEach & break ei toimi eikä return
+									$.extend( obj[o], objAppend )
+									gloTietoIsku = "Uusi tietoisku"
+								}
+								break
+							case "muutos":
+								obj[o].name = gloNewName								
+								break
+							case "poisto":
+								delete obj[o]  // jättää empty => null, roskaa
+								break
+						}
+						return
+					}else
+					{   parentObj = obj[o]
+						gloOksaLoytyi = false;
+						kiipeaPuuhun(obj[o])
+					}                        
+				}
+			}
+		}
+		const lisaaNode = async () =>
+		{	var selection = d3.select(".node.selected")[0][0]
+			if (gloClickIndex === 0)
+			{	alert("Päätasoon ei voi lisätä")
+				return
+			}
+			if(selection)
+			{	var data = selection.__data__
+				var dir = getDirection(data)
+				var name = prompt('Uusi nimi')				
+				if(name)
+				{	name = name.replace(/ /g,"_")
+					if(dir === 'root')
+					{	dir = data.right.length > data.left.length ? 'left':'right'
+					}
+					var cl = data[dir] || data.children || data._children
+					if(!cl)
+					{	cl = data.children = []
+					}
+					cl.push({name: name, position: dir})
+					update(root)
+					gloNewName = name
+					gloToiminto = "lisäys"
+					gloOksaLoytyi = false;
+					kiipeaPuuhun(gloValittuMap)
+					if (gloPositive)
+					{	talletaFirebase(plusDB, gloValittuMap)
+					}else
+					{	talletaFirebase(minusDB, gloValittuMap)
+					}
+					await vastauksetDB.collection(gloCollection).doc(gloNewName).get().then
+					(	(viesti) =>
+						{	gloTietoIsku = "Tietoisku alustettu"
+							if(viesti.exists)
+							{	if (confirm(gloNewName+" tietoisku jo olemassa, tyhjätäänkö?"))
+								{	talletaTietoIsku(gloNewName)
+								}
+							}else
+							{	talletaTietoIsku(gloNewName)
+							}
+						}
+					)
+				}
+			}
+		}
+		const poistaNode = () =>
+		{	var selection = d3.select(".node.selected")[0][0]
+			if(selection)
+			{	var data = selection.__data__
+				var dir = getDirection(data)
+				if(dir === 'root')
+				{	alert('Pääkohtaa ei voi poistaa')
+					return
+				}
+				if (selection.getAttribute("tunnus")[0] === "-")
+				{	alert("Vastakohtaa ei voi poistaa")
+					return
+				}
+				var cl = data.parent[dir] || data.parent.children
+				if(!cl)
+				{	alert('D3 -could not locate children?')
+					return
+				}
+				var i = 0, l = cl.length
+				for(; i<l; i++)
+				{	if(cl[i].id === data.id)
+					{	if(confirm('Poistetaanko '+data.name+'?') === true)
+						{	gloTunnus = data.tunnus
+							cl.splice(i, 1)
+						}
+						break
+					}
+				}
+				selectNode(root)
+				update(root)
+				gloToiminto = "poisto"
+				gloOksaLoytyi = false;
+				kiipeaPuuhun(gloValittuMap)
+				var jsonTeksti = JSON.stringify(gloPlusMap)
+				jsonTeksti = jsonTeksti.replace("null,","")
+				gloValittuMap = JSON.parse(jsonTeksti)
+				if (gloPositive)
+				{	talletaFirebase(plusDB, gloValittuMap)
+				}else
+				{	talletaFirebase(minusDB, gloValittuMap)
+				}
+			}
+		}
+		const muutaNode = async () =>
+		{	var selection = d3.select(".node.selected")[0][0]
+			if(selection)
+			{	var data = selection.__data__
+				var dir = getDirection(data)
+				if(dir === 'root')
+				{	return
+				}
+				if (selection.getAttribute("tunnus") == "1")
+				{	return
+				}		
+				let uusiKohta = prompt('Uusi kohta:', data.name) || data.name
+				if (!uusiKohta)
+				{	return
+				}
+				uusiKohta = uusiKohta.replace(/ /g,"_")
+				await vastauksetDB.collection(gloCollection).doc(gloDoc).get().then
+				(	(viesti) =>
+					{	if(viesti.exists)
+						{	gloTietoIsku = "Uusi miete"
+							if (confirm("Talletetaanko vanhan vastaus uuteen?"))
+							{	gloTietoIsku = viesti.data().viesti
+							}							
+							if (confirm("Poistetaanko vanhan vastus?"))
+							{	vastauksetDB.collection(gloCollection).doc(gloDoc).delete()
+								.then
+								(	() => console.log("Vanha vastaus ("+gloDoc+") poistettu")
+								)
+							}
+						}
+						talletaTietoIsku(uusiKohta)
+					}
+				)				
+				data.name = uusiKohta
+				update(root)
+				gloNewName = data.name
+				gloToiminto = "muutos"
+				gloOksaLoytyi = false;
+				kiipeaPuuhun(gloValittuMap)
+				if (gloPositive)
+				{	talletaFirebase(plusDB, gloValittuMap)
+				}else
+				{	talletaFirebase(minusDB, gloValittuMap)
+				}
+			}
+		}	
+		// --------------------FIREBASE -------------------------------
+		const loadPlusMap = async () =>
+		{	await plusDB.database().ref("/children").on
+			(   "value",
+				(snapshot) =>
+				{	gloPlusMap = snapshot.val()
+					asetaValittuMap()
+				}
+			)
+		}
+		const loadMinusMap = async () =>
+		{	await minusDB.database().ref("/children").on
+			(   "value",
+				(snapshot) =>
+				{	gloMinusMap = snapshot.val()
+					asetaValittuMap() 
+				}
+			)
+		}
+		const talletaFirebase = async (DB, map) =>
+		{	let tietoMetsa = 
+			{	"name": "Vastavoimat",
+				"tunnus": "999999",
+				"children": map
+			}
+			await DB.database().ref().set
+			(   tietoMetsa,
+				function(error)
+				{   if (error)
+					{   console.log(error)
+					}else
+					{   console.log("Firebase talletus ok.")
+					}
+				}
+			)
+		}
+		const asetaValittuMap = () =>
+		{	if (gloPositive)
+			{	gloValittuMap = gloPlusMap
+			}else
+			{	gloValittuMap = gloMinusMap
+			}
+			if (gloValittuMap)
+			{	gloVastaKohtienLkm = gloValittuMap.length
+				let vastaAsetus = gloValittuMap[0].name
+				gloDoc = vastaAsetus
+				const osat = vastaAsetus.split("-")
+				document.getElementById("vastaKohta1").value = osat[0]
+				document.getElementById("vastaKohta2").value = osat[1]
+				var vastaVoimat = '<option selected value="-1">Vastavoimat</option>'
+				gloValittuMap.forEach
+				(	(item) =>
+					{	vastaVoimat += '<option value="'+item.name+'">'+item.name+'</option>'					
+					}
+				)
+				document.getElementById("vastaVoimat").innerHTML = vastaVoimat
+				gloJsonClone = JSON.parse(JSON.stringify(gloValittuMap))
+				loadJsonToD3()
+			}
+		}
+		// ------- ALOITUS ----------------------
+		loadPlusMap().then
+		(	() =>	
+			{	loadMinusMap().then
+				(	() =>
+					{	$('#myModal').modal('show')						
+					}
+				)
+			}
+		)
+    </script>
+  </body>
+</html>
