@@ -2,7 +2,7 @@
 
 Vastavoimat tuo esille dialogian kautta osapuolien tarpeita ja tavoitteita suunnitella tehtäviä, toimenpiteitä ja merkityksiä rajat huomioiden.
 
-Sovelluksen D3 -osat on liitetty, muokattu ja asennettu <a href="http://bl.ocks.org/jdarling/2d4e84460d5f5df9c0ff">Jeremy Drling</a> sivulta.
+Sovelluksen D3 -osat on liitetty, muokattu ja asennettu <a href="http://bl.ocks.org/jdarling/2d4e84460d5f5df9c0ff">Jeremy Darling</a> sivulta.
 
 Alkutoimenpiteinä tulee ensin perustaa kaksi realiaikaista Firebase -tietokantaa ja yksi Cloud -dokumenttikanta.  
 
