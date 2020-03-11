@@ -10,4 +10,4 @@ Näistä perustetuista kannoista kopioidaan niiden configurointitiedot sovelluks
 
 Sovelluksen käyttönotosta on tehty <a href="https://prezi.com/p/-by4ekl1ky0q/?present=1">Prezi esitys</a>
 
-Tekijän oma sivu löytyy osoitteesta <a href"https://vastakohdat-b5663.firebaseapp.com">Vastakohdat</a>
+Tekijän oma sivu löytyy osoitteesta <a href="https://vastakohdat-b5663.firebaseapp.com">Vastakohdat</a>
